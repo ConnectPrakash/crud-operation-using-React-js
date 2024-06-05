@@ -1,57 +1,52 @@
-import React, { useEffect, useState } from 'react'
-import { Form,Button,Checkbox} from 'semantic-ui-react'
-import {useNavigate} from 'react-router-dom'
-import axios from 'axios';
-import { API_URL } from '../Constants/URL';
-function Update() {
+import React, { useState, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-    const [firstName,setFirstName] = useState('');
-    const [lastName,setLastName] = useState('');
-    const [checked,setChecked]  = useState(false);
-    const [id,setId] = useState('');
-     const navigate = useNavigate();
 
-    useEffect(()=>{
-       setId(localStorage.getItem('id'))
-        setFirstName(localStorage.getItem('firstName'))
-       setLastName(localStorage.getItem('lastName'))
-        setChecked(localStorage.getItem('checked'))
- 
-       
-        
-    },[])
+const UserContext = React.createContext();
 
-    const handlenavigate = async() =>{
-        await axios.put(`${API_URL}/${id}`,{
-            firstName,
-            lastName,
-            checked
-        });
-        navigate('/read')
-    }
+const Update = () => {
+  const { state } = useLocation();
+  const { user, index } = state;
+  const [formData, setFormData] = useState({ ...user });
+  const navigate = useNavigate();
+
+
+  const updateUser = useContext(UserContext)[1];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const updatedUsers = [...updateUser];
+    updatedUsers[index] = formData;
+
+    updateUser(updatedUsers);
+    navigate('/read');
+  };
+
   return (
-    <div>
-     <Form className='form'>
-        <Form.Field>
-            <label>First Name</label>
-            <input value={firstName}
-            onChange={event =>setFirstName(event.target.value)}
-             placeholder='enter First name'/>
-        </Form.Field><br/>
-        <Form.Field>
-            <label>Last Name</label>
-            <input value={lastName}
-             onChange={event =>setLastName(event.target.value)}
-            placeholder='enter Last name'/>
-        </Form.Field><br/>
-        <Form.Field>
-             <Checkbox checked={checked} 
-              onChange={() =>setChecked(!checked)} label="Agree the Terms & Conditions"/>
-        </Form.Field><br/>
-        <Button onClick={handlenavigate}>Update</Button>
-    </Form>
+    <div className='form-container'>
+      <h2>Update User</h2>
+      <form onSubmit={handleSubmit}>
+        <label>First Name:</label>
+        <input type='text' name='firstName' value={formData.firstName} onChange={handleChange} required />
+        <label>Last Name:</label>
+        <input type='text' name='lastName' value={formData.lastName} onChange={handleChange} required />
+        <label>Address:</label>
+        <textarea name='address' value={formData.address} onChange={handleChange} required></textarea>
+        <label>Pincode:</label>
+        <input type='text' name='pincode' value={formData.pincode} onChange={handleChange} required />
+        <label>Gender:</label>
+        <input type='radio' name='gender' value='Male' onChange={handleChange} checked={formData.gender === 'Male'} /> Male
+        <input type='radio' name='gender' value='Female' onChange={handleChange} checked={formData.gender === 'Female'} /> Female
+        <button type='submit'>Update</button>
+      </form>
     </div>
-  )
-}
+  );
+};
 
-export default Update
+export default Update;
+

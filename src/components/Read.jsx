@@ -1,74 +1,65 @@
-import React, { useEffect, useState } from 'react'
-import {Table,Button} from 'semantic-ui-react';
-import { API_URL } from '../Constants/URL';
-import axios from 'axios';
-import {useNavigate} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Read.css'
 
-function Read() {
-    const [apiData,setAPIData] = useState([]);
-    const navigate = useNavigate();
+const Read = () => {
+  const [data, setData] = useState([]);
+  const navigate = useNavigate();
 
-    const callGetApi = async()=>{
-        const resp = await axios.get(API_URL);
-        setAPIData(resp.data);
-    }
-    const handleDelete = async (id) => {
-        await axios.delete(`${API_URL}/${id}`)
-        callGetApi();
-      };
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem('users')) || [];
+    setData(storedData);
+  }, []);
 
-    const handleUpdate = async({firstName,lastName,checked,id}) =>{
-        localStorage.setItem('id',id)
-        localStorage.setItem('firstName',firstName)
-        localStorage.setItem('lastName',lastName)
-        localStorage.setItem('checked',checked)
+  const handleDelete = (index) => {
+    const updatedData = [...data];
+    updatedData.splice(index, 1);
+    setData(updatedData);
+    localStorage.setItem('users', JSON.stringify(updatedData));
+  };
 
-        navigate('/update')
-    }
-    useEffect(()=>{
-            callGetApi();
-    },[]);
+  const handleEdit = () => {
+    navigate('/update');
+  };
 
-    const handleCreate = () =>{
-        navigate('/')
-    }
+  const handleAddNew = () => {
+    navigate('/');
+  };
+
   return (
-    <div>
-     <Table singleLine>
-        <Table.Header>
-            <Table.Row>
-                 
-                 <Table.HeaderCell>First Name</Table.HeaderCell>
-                 <Table.HeaderCell>Last Name</Table.HeaderCell>
-                 <Table.HeaderCell>checked</Table.HeaderCell>
-                 <Table.HeaderCell>Delete</Table.HeaderCell>
-                 <Table.HeaderCell>Update</Table.HeaderCell>
-
-            </Table.Row>
-        </Table.Header>
-        <Table.Body>
-        {apiData.map(data => (
-            <Table.Row key={data.id}>
-              <Table.Cell>{data.firstName}</Table.Cell>
-              <Table.Cell>{data.lastName}</Table.Cell>
-              <Table.Cell>{data.checked ? 'Checked' : 'Not Checked'}</Table.Cell>
-              <Table.Cell>
-                <Button onClick={() => handleDelete(data.id)}>Delete</Button>
-              </Table.Cell>
-              <Table.Cell>
-              <Button onClick={() => handleUpdate(data)}>Update</Button>
-              </Table.Cell>
-            </Table.Row>
+    <div className='table-container'>
+      <h2>Read Users</h2>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Address</th>
+            <th>Pincode</th>
+            <th>Gender</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((user, index) => (
+            <tr key={index}>
+              <td>{user.firstName}</td>
+              <td>{user.lastName}</td>
+              <td>{user.address}</td>
+              <td>{user.pincode}</td>
+              <td>{user.gender}</td>
+              <td>
+                <button onClick={handleEdit}>Edit</button>
+                <button onClick={() => handleDelete(index)} style={{ marginLeft: '10px' }}>Delete</button>
+              </td>
+            </tr>
           ))}
-           
-          
-          
-        </Table.Body>
-     </Table>
-     <br/>
-     <Button onClick={handleCreate}>Create</Button>
+        </tbody>
+      </table>
+      <button className='add-user-button' onClick={handleAddNew}>Add New User</button>
     </div>
-  )
-}
+  );
+};
 
-export default Read
+export default Read;
